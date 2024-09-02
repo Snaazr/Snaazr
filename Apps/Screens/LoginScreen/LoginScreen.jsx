@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import { Video } from 'expo-av';
 import Colors from '../../Utils/Colors';
 import * as WebBrowser from "expo-web-browser";
 import { useWarmUpBrowser } from "../../hooks/useWarmUpBrowser";
@@ -49,16 +48,8 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Background video covering the entire screen */}
-      <Video
-        style={styles.video}
-        source={{
-          uri: "https://cdn.pixabay.com/video/2017/11/10/12876-242487530_large.mp4"
-        }}
-        shouldPlay
-        resizeMode='cover'
-        isLooping={true} // Loop the video.
-      />
+      <View style={styles.background} />
+
       <View style={styles.overlay}>
         {/* App title and subtitle */}
         <Text style={styles.title}>SnaZr</Text>
@@ -76,64 +67,60 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Takes up the full height of the screen.
+    flex: 1,
+    backgroundColor: '#001f3f', // Dark navy color resembling space
   },
-  video: {
-    height: '100%', // Fullscreen video.
-    width: '100%',
-    position: 'absolute', // Position video behind other content.
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  background: {
+    ...StyleSheet.absoluteFillObject, // Ensure background covers the entire screen
+    backgroundColor: '#001f3f', // Same color for consistency
   },
   overlay: {
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'flex-start',
-    paddingTop: 60, // Move content down from the top.
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    backgroundColor: Colors.BACKGROUND_TRANS, // Semi-transparent overlay for better text readability.
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay for better readability
   },
   title: {
-    fontWeight: "bold",
-    color: Colors.WHITE,
+    fontWeight: 'bold',
+    color: '#ffffff', // White text
     fontSize: 40,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)', // Adds a shadow to the text for better visibility.
-    textShadowOffset: { width: -1, height: 1 },
+    textShadowColor: 'rgba(0, 0, 0, 0.7)', // Dark shadow for better text visibility
+    textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 10,
+    textTransform: 'uppercase',
+    marginBottom: 10,
   },
   subtitle: {
-    color: Colors.WHITE,
+    color: '#ffffff', // White text
     fontSize: 20,
     textAlign: 'center',
-    marginTop: 10,
-    opacity: 0.9, // Slightly transparent subtitle.
+    marginBottom: 40,
+    opacity: 0.9,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.WHITE,
+    backgroundColor: '#ffffff', // White button
     paddingVertical: 15,
-    paddingHorizontal: 45,
-    borderRadius: 50, // Rounded button corners.
-    position: 'absolute', // Positioned near the bottom of the screen.
-    bottom: 150,
-    shadowColor: '#000', // Adds shadow to the button for depth.
+    paddingHorizontal: 40,
+    borderRadius: 50,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 5,
   },
   buttonImage: {
-    width: 30, // Google logo size.
+    width: 30,
     height: 30,
   },
   buttonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: 10, // Space between the Google logo and the text.
+    marginLeft: 10,
+    color: '#000000', // Dark text color for contrast
   },
 });
 
