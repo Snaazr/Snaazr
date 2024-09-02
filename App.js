@@ -6,6 +6,8 @@ import LoginScreen from './Apps/Screens/LoginScreen/LoginScreen';
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigation from './Apps/Navigation/TabNavigation';
+import ThankYouScreen from './Apps/Navigation/ThankYou';
+
 
 export default function App() {
   // Load custom fonts
@@ -20,7 +22,8 @@ export default function App() {
       <View style={styles.container}>
         <SignedIn>
           <NavigationContainer>
-            <TabNavigation />
+            {/* <TabNavigation /> */}
+            <ThankYouScreen />
           </NavigationContainer>
         </SignedIn>
         <SignedOut>
