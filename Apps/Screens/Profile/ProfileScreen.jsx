@@ -1,134 +1,144 @@
+/*
+ Importing necessary dependencies from React and React Native.
+'useEffect' allows running side effects in the functional component.
+'useState' manages component state.
+Importing UI components such as View, Text, Button, Image, etc. for layout and interaction.
+'ImagePicker' from Expo is used to select images from the device gallery.
+'supabase' is configured for database operations. 
+*/
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, Image, TextInput, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
-import * as ImagePicker from 'expo-image-picker'; // Expo's image picker library for handling image uploads
-import { supabase } from "./../../Utils/SupabaseConfig"; // Supabase client for database interactions
+import * as ImagePicker from 'expo-image-picker';
+import { supabase } from "./../../Utils/SupabaseConfig";
 
-/**
- * ProfileScreen Component
- * Handles user profile display, editing, and logout functionality
- */
-const ProfileScreen = () => {
-  // State to manage the user's profile picture
+// Functional component representing the Settings screen.
+const SettingsScreen = () => {
+  // State management for profile picture, selected image, user name, status, and edit mode.
   const [profilePicture, setProfilePicture] = useState(null);
-  // State to manage user's name (defaulted to 'John Doe')
-  const [name, setName] = useState('John Doe');
-  // State to manage user's email (defaulted to a mock email)
-  const [email, setEmail] = useState('john.doe@example.com');
-  // Boolean state to control edit mode for the profile
-  const [editMode, setEditMode] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [name, setName] = useState('Yaxh');  // Default user name.
+  const [status, setStatus] = useState('Busy');  // Default status message.
+  const [editMode, setEditMode] = useState(false);  // Boolean to toggle edit mode for profile information.
 
-  // Fetch user data from the database on component mount
+/*
+  Fetch user data from the Supabase database when the component mounts.
+  The 'useEffect' hook ensures this operation happens after the component renders.
+*/
   useEffect(() => {
-    fetchUserData(); // Fetches profile data from Supabase
+    fetchUserData();
   }, []);
 
-  /**
-   * Fetches the user's data (profile picture, name, and email) from Supabase
-   * based on the stored email.
-   */
+/*  Asynchronous function to fetch user data from the 'Users' table in Supabase.
+  Retrieves profile picture, name, and status based on the user's email (mock query as email is missing).
+*/
   const fetchUserData = async () => {
     const { data, error } = await supabase
       .from('Users')
-      .select('profilepic, name, email') // Select relevant fields from the database
-      .eq('email', email) // Filters by the email of the logged-in user
-      .single(); // Expecting a single result
+      .select('profilepic, name, status')
+      .eq('email')  // Missing email to fetch data properly.
+      .single();
 
     if (data) {
-      // If user data is found, update the states
+      // Update the component state with the fetched data.
       setProfilePicture(data.profilepic);
       setName(data.name);
-      setEmail(data.email);
+      setStatus(data.status);
     } else if (error) {
-      // Log error if fetching fails
+      // Log any error during the data fetching process.
       console.error('Error fetching user data:', error);
     }
   };
-
-  /**
-   * Handles image picking using the ImagePicker library.
-   * Allows users to choose a new profile picture from their library.
-   */
+/*
+  Function to handle image selection from the user's device gallery.
+  Uses Expo's ImagePicker to select an image, and if successful, updates the 'selectedImage' state.
+*/
   const handlePickImage = async () => {
-    // Launch image picker and allow user to select an image
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Restrict selection to images
-      allowsEditing: true, // Allow user to crop/adjust the image
-      aspect: [4, 3], // Set aspect ratio for cropping
-      quality: 1, // Set image quality (1 is highest)
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,  // Allows the user to edit the image after selecting it.
+      aspect: [4, 3],  // Aspect ratio for cropping.
+      quality: 1,  // Image quality, maxed out at 1.
     });
 
+    // If the image selection was not canceled, update the 'selectedImage' state with the URI of the chosen image.
     if (!result.canceled) {
-      // If user picks an image, update the profilePicture state
-      setProfilePicture(result.uri);
-      // Future: Consider uploading image to Supabase or other services
+      setSelectedImage(result.assets[0].uri);  // Correct handling for newer versions of expo-image-picker.
     }
   };
 
-  /**
-   * Placeholder function for handling user logout.
-   * Displays a logout message for now.
-   */
-  const handleLogout = () => {
-    // Future: Implement actual logout logic (e.g., clearing auth tokens)
+/* 
+Function to handle user logout.
+In a real-world scenario, this would trigger proper logout logic (e.g., clearing session, etc.).  
+*/
+const handleLogout = () => {
     alert('Logged out');
   };
 
-  // Default profile picture URL in case the user hasn't uploaded one
-  const defaultProfilePicUrl = 'https://example.com/defaultProfilePic.png'; // Replace with actual default image URL
+  // Default URL for a profile picture in case the user doesn't have one.
+  const defaultProfilePicUrl = 'https://static.vecteezy.com/system/resources/thumbnails/020/911/740/small/user-profile-icon-profile-avatar-user-icon-male-icon-face-icon-profile-icon-free-png.png'; 
 
+  // Rendering the component UI.
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Profile Section */}
+        
+        {/* Profile Section: Displays and allows editing the user's profile information */}
         <View style={styles.profileSection}>
-          {/* Profile picture that can be clicked to change */}
           <TouchableOpacity onPress={handlePickImage}>
-            <Image
-              source={{ uri: profilePicture || defaultProfilePicUrl }} // Display chosen image or default if none exists
-              style={styles.profilePicture}
-            />
+            {/* Display selected image if available, otherwise use default or fetched profile picture */}
+            {selectedImage && (
+              <Image
+                source={{ uri: selectedImage }}
+                style={{ width: 130, height: 130, borderRadius: 65 }}
+              />
+            )}
           </TouchableOpacity>
-          {/* Display user's name and email */}
-          <Text style={styles.username}>{name}</Text>
-          <Text style={styles.email}>{email}</Text>
-
+          {/* Edit mode toggles between viewing and editing the user's profile information */}
           {editMode ? (
-            // Render editable inputs if in edit mode
             <View style={styles.editSection}>
-              {/* Text input to edit name */}
+              {/* Editable fields for name and status */}
               <TextInput
                 style={styles.input}
                 value={name}
-                onChangeText={setName} // Update name state as user types
+                onChangeText={setName}
               />
-              {/* Text input to edit email */}
               <TextInput
                 style={styles.input}
-                value={email}
-                onChangeText={setEmail} // Update email state as user types
+                value={status}
+                onChangeText={setStatus}
               />
-              {/* Button to save changes and exit edit mode */}
+              {/* Save button to exit edit mode */}
               <Button title="Save" onPress={() => setEditMode(false)} />
             </View>
           ) : (
-            // Render Edit Profile button when not in edit mode
-            <Button title="Edit Profile" onPress={() => setEditMode(true)} />
+            <>
+              {/* Displaying the user's name and status when not in edit mode */}
+              <Text style={styles.username}>{name}</Text>
+              <Text style={styles.status}>{status}</Text>
+              {/* Button to enter edit mode */}
+              <Button title="Edit Profile" onPress={() => setEditMode(true)} />
+            </>
           )}
         </View>
 
-        {/* Navigation buttons for various sections */}
+        {/* Navigation Section: Contains buttons for navigating to other parts of the app */}
         <View style={styles.navigationSection}>
-          <Button title="View Products" onPress={() => {/* Navigate to Products Page */}} />
-          <Button title="View Cart" onPress={() => {/* Navigate to Cart Page */}} />
-          <Button title="View Order History" onPress={() => {/* Navigate to Order History */}} />
+          <Button title="Favorites" onPress={() => {/* Navigate to Favorites */}} />
+          <Button title="Wishlist" onPress={() => {/* Navigate to Broadcast Lists */}} />
+          <Button title="Order History" onPress={() => {/* Navigate to Starred Messages */}} />
+          <Button title="Address" onPress={() => {/* Navigate to Linked Devices */}} />
+          <Button title="Saved Card's" onPress={() => {/* Navigate to Linked Devices */}} />
         </View>
 
-        {/* Settings section */}
+        {/* Settings Section: Provides access to various settings */}
         <View style={styles.settingsSection}>
-          <Button title="Account Settings" onPress={() => {/* Navigate to Account Settings */}} />
+          <Button title="Account" onPress={() => {/* Navigate to Account */}} />
+          <Button title="Privacy" onPress={() => {/* Navigate to Privacy */}} />
+          <Button title="History" onPress={() => {/* Navigate to Chats */}} />
+          <Button title="FAQ" onPress={() => {/* Navigate to Notifications */}} />
         </View>
 
-        {/* Logout button */}
+        {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
@@ -137,61 +147,64 @@ const ProfileScreen = () => {
   );
 };
 
-// Stylesheet to handle UI styling
+// StyleSheet: Defines the styles for different components and sections of the UI.
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1, // Safe area container that fills the screen
+    flex: 1,
+    backgroundColor: '#fff',
   },
   container: {
-    flex: 1,
-    padding: 16, // Adds padding inside the ScrollView
+    padding: 16,
   },
   profileSection: {
-    alignItems: 'center', // Centers profile section elements
+    alignItems: 'center',
     marginBottom: 24,
   },
   profilePicture: {
     width: 100,
     height: 100,
-    borderRadius: 50, // Circular profile picture
+    borderRadius: 50,
     marginBottom: 12,
   },
   username: {
     fontSize: 20,
-    fontWeight: 'bold', // Bold font for username
+    fontWeight: 'bold',
+    color: '#000',
   },
-  email: {
+  status: {
     fontSize: 16,
-    color: 'gray', // Gray font color for email
+    color: 'gray',
   },
   editSection: {
     marginTop: 16,
-    width: '100%', // Full width for edit fields
+    width: '100%',
   },
   input: {
-    borderBottomWidth: 1, // Underlined text input
+    borderBottomWidth: 1,
     borderBottomColor: 'gray',
     marginBottom: 8,
     padding: 8,
     fontSize: 16,
+    color: '#000',
   },
   navigationSection: {
-    marginBottom: 24, // Adds spacing between sections
+    marginBottom: 24,
   },
   settingsSection: {
-    marginBottom: 24, // Adds spacing between sections
+    marginBottom: 24,
   },
   logoutButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: 'red', // Red background for logout button
-    borderRadius: 5, // Rounded button corners
+    backgroundColor: 'red',
+    borderRadius: 5,
   },
   logoutText: {
     color: 'white',
     textAlign: 'center',
-    fontWeight: 'bold', // White bold text for logout
+    fontWeight: 'bold',
   },
 });
 
-export default ProfileScreen; // Exporting the ProfileScreen component
+// Export the SettingsScreen component as the default export.
+export default SettingsScreen;
