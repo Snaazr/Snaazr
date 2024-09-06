@@ -1,18 +1,30 @@
-// Import necessary components and libraries
 import React from 'react';
+import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './../Screens/Home/HomeScreen';
 import SearchScreen from './../Screens/Search/SearchScreen';
-import AddScreen from './../Screens/Add/AddScreen';
+import NotificationScreen from '../Screens/Notifications/NotificationScreen';
 import ProfileScreen from './../Screens/Profile/ProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 import CartScreen from '../Screens/Cart/CartScreen';
-// import NotificationScreen from '../Screens/Notifications/NotificationScreen';
 import Colors from './../Utils/Colors';
+import { useUser } from "@clerk/clerk-expo";
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigation = () => {
+  const { user } = useUser(); // Move the hook inside the functional component
+
+  const updateProfileImage = async () => {
+    const { data, error } = await supabase
+      .from("Users")
+      .update({ profilepic: user.imageUrl })
+      .eq("email", user?.primaryEmailAddress?.emailAddress)
+      .is("profilepic", null)
+      .select();
+    console.log(data);
+  };
+
   return (
     <Tab.Navigator screenOptions={{
       headerShown: false,
@@ -36,18 +48,8 @@ const TabNavigation = () => {
           ),
         }}
       />
+    
       <Tab.Screen 
-        name='Add' 
-        component={AddScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={32} color="black" />
-          ),
-        }}
-      />
-      
-      {/* Uncomment to include the Notifications tab */}
-      {/* <Tab.Screen 
         name='Notifications' 
         component={NotificationScreen}
         options={{
@@ -55,7 +57,7 @@ const TabNavigation = () => {
             <Ionicons name="notifications-outline" size={32} color="black" />
           ),
         }}
-      /> */}
+      />
 
       <Tab.Screen 
         name='Cart' 
@@ -73,7 +75,14 @@ const TabNavigation = () => {
           headerShown: true,
           headerTitle: 'Profile & Settings',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications-outline" size={32} color="black" />
+            <Image
+            source={{ uri: user?.imageUrl }}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 99,
+            }}
+          />
           ),
         }}
       />
