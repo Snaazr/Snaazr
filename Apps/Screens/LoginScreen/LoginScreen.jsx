@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import Checkbox from 'expo-checkbox'; // Use Expo's Checkbox
 import Colors from '../../Utils/Colors';
 import * as WebBrowser from "expo-web-browser";
 import { useWarmUpBrowser } from "../../hooks/useWarmUpBrowser";
@@ -13,7 +14,15 @@ const LoginScreen = () => {
 
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" }); // Initialize Google OAuth flow.
 
-  const onPress = React.useCallback(async () => {
+  const [isChecked, setIsChecked] = useState(false); // State to manage checkbox
+
+  const onPress = useCallback(async () => {
+    if (!isChecked) {
+      // If checkbox is not checked, return early
+      alert("You must agree to the Terms & Conditions to continue.");
+      return;
+    }
+
     try {
       // Start OAuth flow and handle the result.
       const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow();
@@ -44,7 +53,7 @@ const LoginScreen = () => {
     } catch (err) {
       console.error("OAuth error", err); // Log OAuth errors.
     }
-  }, []);
+  }, [isChecked]);
 
   return (
     <View style={styles.container}>
@@ -52,11 +61,24 @@ const LoginScreen = () => {
 
       <View style={styles.overlay}>
         {/* App title and subtitle */}
-        <Text style={styles.title}>SnaZr</Text>
-        <Text style={styles.subtitle}>Shopping with Shorting</Text>
+        <Text style={styles.title}>Snaazr</Text>
+        <Text style={styles.subtitle}>Where shopping meets entertainment through short-form videos.</Text>
+
+        {/* Checkbox for T&C */}
+        <View style={styles.checkboxContainer}>
+          <Checkbox
+            value={isChecked}
+            onValueChange={setIsChecked}
+            color={isChecked ? '#4630EB' : undefined}
+            style={styles.checkbox}
+          />
+          <Text style={styles.checkboxLabel}>
+            I agree to the <Text style={styles.link} onPress={() => WebBrowser.openBrowserAsync('https://snaazr.vercel.app/')}>Terms & Conditions</Text>
+          </Text>
+        </View>
 
         {/* Google Sign-In button */}
-        <TouchableOpacity onPress={onPress} style={styles.button}>
+        <TouchableOpacity onPress={onPress} style={[styles.button, { opacity: isChecked ? 1 : 0.6 }]} disabled={!isChecked}>
           <Image source={require('./../../../assets/Images/Google.png')} style={styles.buttonImage} />
           <Text style={styles.buttonText}>Sign In With Google</Text>
         </TouchableOpacity>
@@ -121,6 +143,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
     color: '#000000', // Dark text color for contrast
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  checkbox: {
+    marginRight: 10,
+  },
+  checkboxLabel: {
+    color: '#ffffff', // White text for label
+    fontSize: 16,
+  },
+  link: {
+    color: '#1e90ff', // Blue color for link
+    textDecorationLine: 'underline',
   },
 });
 
