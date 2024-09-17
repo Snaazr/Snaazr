@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/clerk-expo";
 import React, { useEffect } from "react";
-import { View, Text, Image, SafeAreaView } from "react-native";
+import { View, Text, SafeAreaView } from "react-native";
 import { supabase } from "./../../Utils/SupabaseConfig";
 
 const HomeScreen = () => {
@@ -45,14 +45,6 @@ const HomeScreen = () => {
           alignItems: "center",
         }}>
           <Text style={{ fontSize: 30, fontWeight: "bold" }}>Snaazr</Text>
-          <Image
-            source={{ uri: user?.imageUrl }}
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 99,
-            }}
-          />
         </View>
       </View>
     </SafeAreaView>
