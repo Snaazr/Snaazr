@@ -8,9 +8,9 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (user) {
-      updateProfileImage(); // Update user's profile image if not already set
+      updateProfileImage(); 
     }
-    getLatestVideoList(); // Fetch latest video and user data
+    getLatestVideoList();
   }, [user]);
 
   const updateProfileImage = async () => {
